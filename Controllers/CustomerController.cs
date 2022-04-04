@@ -56,7 +56,8 @@ namespace Farmerbrothers.Controllers
         }
         public class CompanyInfo
         {
-            public int ApplicationId;
+            public string CustomerID;
+            public string CustomerJDE;
             public string Name;
             public string Phone;
             public string Email;
@@ -65,7 +66,10 @@ namespace Farmerbrothers.Controllers
             public string BillingState;
             public string BillingCity;
             public string BillingZip;
-            public string DeliveryAddress;
+            public string DeliveryAddress1;
+            public string DeliveryAddress2;
+            public string DeliveryAddress3;
+            public string DeliveryAddress4;
             public string DeliveryState;
             public string DeliveryCity;
             public string DeliveryZip;
@@ -84,11 +88,10 @@ namespace Farmerbrothers.Controllers
             public string AccountPayableContact;
             public string AccountPayableTitle;
             public string AccountPayablePhone;
-            public string AccountPayableEmail;
-            //public float CreditRequested;                     
+            public string AccountPayableEmail;                                 
             public string TaxExemptFile;
             public string ResaleCertificateNoFile;
-            public string SecondaryAccountPayableContact;            
+            public string SecondaryAccountPayableContact;
             public string SecondaryAccountPayableTitle;
             public string SecondaryAccountPayablePhone;
             public string SecondaryAccountPayableEmail;
@@ -97,6 +100,15 @@ namespace Farmerbrothers.Controllers
             public string BankRefDocumentFile;
             public string PersonalGuaranteeAuthSignFile;
             public string ConsentAuthSignFile;
+            public string fb1Status;
+
+            // to be saved in table upon impementation in front end
+            public string OwnerName;
+            public string Fax;
+            public string County;
+            public string TaxGroup;
+            public string PrincipalCell;
+            public string PrincipalEmail;
         }
 
         public class TradeAndBankRef
@@ -156,26 +168,15 @@ namespace Farmerbrothers.Controllers
             SqlConnection cnn = new SqlConnection(connString);
             try
             {
-                string saveStaff = "INSERT into NARF_NewAccount (Name,Phone,Email,DBAName,BillingAddress," +
-                    "BillingState,BillingCity,BillingZip,DeliveryAddress,DeliveryState,DeliveryCity,DeliveryZip,CompanyType," +
-                    "PrincipalOfficer,PrincipalOfficerTitle,NatureOfBusiness,EstablishedYear,StateIncorporated,FederalTaxID," +
-                    "ResaleCertificateNumber,TaxExempt,PORequired,AlreadyHasFBAccount,FBAccount,AccountPayableContact," +
-                    "AccountPayableTitle,AccountPayablePhone,AccountPayableEmail,CreatedUserID,CreatedUserName," +
-                    "CreatedDate,ModifiedUserID,ModifiedUserName,ModifiedDate,BankName,AccountNo,BankAddress,BankCity, " +
-                    "BankState,BankZip,BankPhone,BankEmailID,SecondaryAccountPayableContact,SecondaryAccountPayableTitle," +
-                    "SecondaryAccountPayablePhone,SecondaryAccountPayableEmail,DUNSNumber,BillingPhone,PGFirstName,PGMiddleName,PGLastName," +
-                    "PGTitle,PGPresentHomeAddress,PGCity,PGState,PGZip,PGDOB,PGSSN,PGDriverLicenceNoAndState,PGDate,CASTermsAndConditions," +
-                    "CASPrintName,CASTitle,CASDate) output INSERTED.APPLICATIONID VALUES" +
-                    "(@Name,@Phone,@Email,@DBAName,@BillingAddress,@BillingState,@BillingCity,@BillingZip,@DeliveryAddress," +
-                    "@DeliveryState,@DeliveryCity,@DeliveryZip,@CompanyType,@PrincipalOfficer,@PrincipalOfficerTitle," +
+                string saveStaff = "INSERT into NARF_Header (CustomerName,Phone,Email,DBAName,BillingAddress," +
+                    "BillingState,BillingCity,BillingZip,DeliveryAddress1,DeliveryAddress2,DeliveryAddress3,DeliveryAddress4,DeliveryState," +
+                    "DeliveryCity,DeliveryZip,CompanyType,PrincipalOfficer,PrincipalOfficerTitle,NatureOfBusiness,EstablishedYear," +
+                    "StateIncorporated,FederalTaxID,ResaleCertificateNumber,TaxExempt,PORequired,AlreadyHasFBAccount,FBAccount," +
+                    "DUNSNumber,CustomerJDE,fb1Status,fb1UpdatedDate) output INSERTED.CustomerID VALUES" +
+                    "(@Name,@Phone,@Email,@DBAName,@BillingAddress,@BillingState,@BillingCity,@BillingZip,@DeliveryAddress1,@DeliveryAddress2," +
+                    "@DeliveryAddress3,@DeliveryAddress4,@DeliveryState,@DeliveryCity,@DeliveryZip,@CompanyType,@PrincipalOfficer,@PrincipalOfficerTitle," +
                     "@NatureOfBusiness,@EstablishedYear,@StateIncorporated,@FederalTaxID,@ResaleCertificateNumber," +
-                    "@TaxExempt,@PORequired,@AlreadyHasFBAccount,@FBAccount,@AccountPayableContact,@AccountPayableTitle," +
-                    "@AccountPayablePhone,@AccountPayableEmail,@CreatedUserID,@CreatedUserName," +
-                    "@CreatedDate,@ModifiedUserID,@ModifiedUserName,@ModifiedDate,@BankName,@AccountNo,@BankAddress,@BankCity, " +
-                    "@BankState,@BankZip,@BankPhone,@BankEmailID,@SecondaryAccountPayableContact,@SecondaryAccountPayableTitle,@SecondaryAccountPayablePhone," +
-                    "@SecondaryAccountPayableEmail,@DUNSNumber,@BillingPhone,@PGFirstName,@PGMiddleName,@PGLastName,@PGTitle,@PGPresentHomeAddress,@PGCity," +
-                    "@PGState,@PGZip,@PGDOB,@PGSSN,@PGDriverLicenceNoAndState,@PGDate,@CASTermsAndConditions,@CASPrintName,@CASTitle,@CASDate);";
-                
+                    "@TaxExempt,@PORequired,@AlreadyHasFBAccount,@FBAccount,@DUNSNumber,@CustomerJDE,@fb1Status,@fb1UpdatedDate);";
 
 
                 using (SqlCommand cmd = new SqlCommand(saveStaff, cnn))
@@ -201,9 +202,11 @@ namespace Farmerbrothers.Controllers
                     cmd.Parameters.AddWithValue("@BillingAddress", newAccount.companyInfo.BillingAddress);
                     cmd.Parameters.AddWithValue("@BillingState", newAccount.companyInfo.BillingState);
                     cmd.Parameters.AddWithValue("@BillingCity", newAccount.companyInfo.BillingCity);
-                    cmd.Parameters.AddWithValue("@BillingZip", newAccount.companyInfo.BillingZip);
-                    cmd.Parameters.AddWithValue("@BillingPhone", newAccount.companyInfo.BillingPhone);                    
-                    cmd.Parameters.AddWithValue("@DeliveryAddress", newAccount.companyInfo.DeliveryAddress);
+                    cmd.Parameters.AddWithValue("@BillingZip", newAccount.companyInfo.BillingZip);                                      
+                    cmd.Parameters.AddWithValue("@DeliveryAddress1", newAccount.companyInfo.DeliveryAddress1);
+                    cmd.Parameters.AddWithValue("@DeliveryAddress2", newAccount.companyInfo.DeliveryAddress2);
+                    cmd.Parameters.AddWithValue("@DeliveryAddress3", newAccount.companyInfo.DeliveryAddress3);
+                    cmd.Parameters.AddWithValue("@DeliveryAddress4", newAccount.companyInfo.DeliveryAddress4);
                     cmd.Parameters.AddWithValue("@DeliveryState", newAccount.companyInfo.DeliveryState);
                     cmd.Parameters.AddWithValue("@DeliveryCity", newAccount.companyInfo.DeliveryCity);
                     cmd.Parameters.AddWithValue("@DeliveryZip", newAccount.companyInfo.DeliveryZip);
@@ -219,11 +222,85 @@ namespace Farmerbrothers.Controllers
                     cmd.Parameters.AddWithValue("@PORequired", newAccount.companyInfo.PORequired);
                     cmd.Parameters.AddWithValue("@AlreadyHasFBAccount", newAccount.companyInfo.AlreadyHasFBAccount);
                     cmd.Parameters.AddWithValue("@FBAccount", newAccount.companyInfo.FBAccount);
+                    cmd.Parameters.AddWithValue("@DUNSNumber", newAccount.companyInfo.DUNSNumber);
+                    cmd.Parameters.AddWithValue("@CustomerJDE", newAccount.companyInfo.CustomerJDE); 
+                    cmd.Parameters.AddWithValue("@fb1Status", newAccount.companyInfo.fb1Status);
+                   // cmd.Parameters.AddWithValue("@CustomerJDE", "");
+                    //cmd.Parameters.AddWithValue("@fb1Status", "Open");
+                    cmd.Parameters.AddWithValue("@fb1UpdatedDate", DateTime.Now.ToString("yyyy-MM-dd")); 
+
+                    cnn.Open();
+                    //MessageBox.Show(cmd.CommandText);
+                    int modified = (int)cmd.ExecuteScalar();
+
+                    if (cnn.State == System.Data.ConnectionState.Open)
+                        cnn.Close();
+
+                    Result r = new Result();
+                    r.code = modified;
+                    r.errorDesc = "";
+                    return r;
+
+                }
+            }
+            catch (SqlException e)
+            {
+                //MessageBox.Show();
+                cnn.Close();
+                Result r = new Result();
+                r.code = 0;
+                r.errorDesc = e.ToString();
+                return r;
+            }
+
+        }
+
+        
+        public Result insertIntoNarfFB1(int applicationID, NewAccount newAccount)
+        {
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+
+            SqlConnection cnn = new SqlConnection(connString);
+            try
+            {
+                string saveStaff = "INSERT into NARF_FB1 (CustomerID,AccountPayableContact," +
+                    "AccountPayableTitle,AccountPayablePhone,AccountPayableEmail,CreatedUserID,CreatedUserName," +
+                    "CreatedDate,ModifiedUserID,ModifiedUserName,ModifiedDate,BankName,AccountNo,BankAddress,BankCity, " +
+                    "BankState,BankZip,BankPhone,BankEmailID,SecondaryAccountPayableContact,SecondaryAccountPayableTitle," +
+                    "SecondaryAccountPayablePhone,SecondaryAccountPayableEmail,BillingPhone,PGFirstName,PGMiddleName,PGLastName," +
+                    "PGTitle,PGPresentHomeAddress,PGCity,PGState,PGZip,PGDOB,PGSSN,PGDriverLicenceNoAndState,PGDate,CASTermsAndConditions," +
+                    "CASPrintName,CASTitle,CASDate) VALUES" +
+                    "(@CustomerID,@AccountPayableContact,@AccountPayableTitle," +
+                    "@AccountPayablePhone,@AccountPayableEmail,@CreatedUserID,@CreatedUserName," +
+                    "@CreatedDate,@ModifiedUserID,@ModifiedUserName,@ModifiedDate,@BankName,@AccountNo,@BankAddress,@BankCity, " +
+                    "@BankState,@BankZip,@BankPhone,@BankEmailID,@SecondaryAccountPayableContact,@SecondaryAccountPayableTitle,@SecondaryAccountPayablePhone," +
+                    "@SecondaryAccountPayableEmail,@BillingPhone,@PGFirstName,@PGMiddleName,@PGLastName,@PGTitle,@PGPresentHomeAddress,@PGCity," +
+                    "@PGState,@PGZip,@PGDOB,@PGSSN,@PGDriverLicenceNoAndState,@PGDate,@CASTermsAndConditions,@CASPrintName,@CASTitle,@CASDate);";
+
+
+                using (SqlCommand cmd = new SqlCommand(saveStaff, cnn))
+                {
+                    string sourceDate = newAccount.userInfo.CreatedDate.ToString();
+                    DateTime Date = DateTime.Parse(sourceDate);
+                    string createdDate = Date.ToString("yyyy-MM-dd HH:mm:ss");
+
+                    sourceDate = newAccount.userInfo.ModifiedDate.ToString();
+                    Date = DateTime.Parse(sourceDate);
+                    string modifiedDate = Date.ToString("yyyy-MM-dd HH:mm:ss");
+
+                    /* Note: Empty date from front-end is 1900-01-01 
+                     All such values to be treated as NULL */
+
+                    string ssn = Encrypt(newAccount.personalGuarantee.SSN);
+                    string dlnas = Encrypt(newAccount.personalGuarantee.DriverLicenceNoAndState);
+
+                    cmd.Parameters.AddWithValue("@CustomerID", applicationID);
                     cmd.Parameters.AddWithValue("@AccountPayableContact", newAccount.companyInfo.AccountPayableContact);
                     cmd.Parameters.AddWithValue("@AccountPayableTitle", newAccount.companyInfo.AccountPayableTitle);
                     cmd.Parameters.AddWithValue("@AccountPayablePhone", newAccount.companyInfo.AccountPayablePhone);
                     cmd.Parameters.AddWithValue("@AccountPayableEmail", newAccount.companyInfo.AccountPayableEmail);
-                    //cmd.Parameters.AddWithValue("@CreditRequested", newAccount.CreditRequested);
+                    //cmd.Parameters.AddWithValue("@CreditRequested", newAccount.companyInfo.CreditRequested);
+                    
                     cmd.Parameters.AddWithValue("@CreatedUserID", newAccount.userInfo.CreatedUserID);
                     cmd.Parameters.AddWithValue("@CreatedUserName", newAccount.userInfo.CreatedUserName);
                     cmd.Parameters.AddWithValue("@CreatedDate", createdDate);
@@ -234,7 +311,7 @@ namespace Farmerbrothers.Controllers
                     cmd.Parameters.AddWithValue("@SecondaryAccountPayableTitle", newAccount.companyInfo.SecondaryAccountPayableTitle);
                     cmd.Parameters.AddWithValue("@SecondaryAccountPayablePhone", newAccount.companyInfo.SecondaryAccountPayablePhone);
                     cmd.Parameters.AddWithValue("@SecondaryAccountPayableEmail", newAccount.companyInfo.SecondaryAccountPayableEmail);
-                    cmd.Parameters.AddWithValue("@DUNSNumber", newAccount.companyInfo.DUNSNumber);
+                    cmd.Parameters.AddWithValue("@BillingPhone", newAccount.companyInfo.BillingPhone);  
 
                     /* Bank Details */
                     cmd.Parameters.AddWithValue("@BankName", newAccount.tradeAndBankRef.BankName);
@@ -272,13 +349,13 @@ namespace Farmerbrothers.Controllers
 
                     cnn.Open();
                     //MessageBox.Show(cmd.CommandText);
-                    int modified = (int)cmd.ExecuteScalar();
-
+                    cmd.ExecuteNonQuery();
+                    
                     if (cnn.State == System.Data.ConnectionState.Open)
                         cnn.Close();
 
                     Result r = new Result();
-                    r.code = modified;
+                    r.code = 1;
                     r.errorDesc = "";
                     return r;
 
@@ -293,7 +370,6 @@ namespace Farmerbrothers.Controllers
                 r.errorDesc = e.ToString();
                 return r;
             }
-
         }
 
         public Result insertIntoChildTable(int applicationID, NewAccount newAccount)
@@ -308,12 +384,12 @@ namespace Farmerbrothers.Controllers
             {
                 try
                 {
-                    string saveStaff = "INSERT into NARF_TradeReference (ApplicationId,CompanyName,AccountId,Phone,EmailID) VALUES(@ApplicationId,@CompanyName," +
+                    string saveStaff = "INSERT into NARF_TradeReference (CustomerID,CompanyName,AccountId,Phone,EmailID) VALUES(@CustomerID,@CompanyName," +
                         "@AccountId,@Phone,@EmailID);";
 
                     using (SqlCommand cmd = new SqlCommand(saveStaff, cnn))
                     {
-                        cmd.Parameters.AddWithValue("@ApplicationId", applicationID);
+                        cmd.Parameters.AddWithValue("@CustomerID", applicationID);
                         cmd.Parameters.AddWithValue("@CompanyName", t.CompanyName);
                         cmd.Parameters.AddWithValue("@AccountId", t.AccountID);
                         cmd.Parameters.AddWithValue("@EmailID", t.EmailID);
@@ -353,7 +429,7 @@ namespace Farmerbrothers.Controllers
             try
             {
                 //string saveStaff = "UPDATE NARF_NewAccount ("+fieldName+ ") VALUES(@"+fieldName+ ") WHERE ApplicationId = "+ applicationID+";";
-                string saveStaff = "UPDATE NARF_NewAccount SET " + fieldName + "='" + fileName + "' WHERE ApplicationId = " + applicationID + ";";
+                string saveStaff = "UPDATE NARF_FB1 SET " + fieldName + "='" + fileName + "' WHERE CustomerID = " + applicationID + ";";
 
                 using (SqlCommand cmd = new SqlCommand(saveStaff, cnn))
                 {
@@ -394,21 +470,28 @@ namespace Farmerbrothers.Controllers
             int recordID = r.code;
             if (recordID != 0)
             {
-                Result riict=insertIntoChildTable(recordID, newAccount);
-                if (riict.code != -1)
+                Result riinfb1 = insertIntoNarfFB1(recordID, newAccount);
+                if (riinfb1.code != 0)
                 {
-                    if (newAccount.companyInfo.TaxExempt == 0 && newAccount.companyInfo.ResaleCertificateNumber == "")
+                    Result riict = insertIntoChildTable(recordID, newAccount);
+                    if (riict.code != -1)
                     {
-                        string message = buildBody(newAccount);
-                        sendEmail(message, newAccount, false);
+                        if (newAccount.companyInfo.TaxExempt == 0 && newAccount.companyInfo.ResaleCertificateNumber == "")
+                        {
+                            string message = buildBody(newAccount);
+                            sendEmail(message, newAccount, false);
+                        }
+                        return "{'result':'Success','data':{'ApplicationId':" + recordID + "}}";//+ recordID;
                     }
-                    return "{'result':'Success','data':{'ApplicationId':" + recordID + "}}";//+ recordID;
+                    else
+                        return "{'result':'Success','data':{'ApplicationId':" + recordID + "'},'error':{'" + riict.errorDesc + "'}}";
                 }
                 else
-                    return "{'result':'Success','data':{'ApplicationId':" + recordID + "'},'error':{'"+ riict.errorDesc +"'}}";
+                    return "{'result':'Success','data':{'ApplicationId':" + recordID + "'},'error':{'" + riinfb1.errorDesc + "'}}";
             }
             else
-                return "{'result':'Failed','data':{'ApplicationId': 'NA'},'error':{'"+r.errorDesc+"'}}"; 
+                return "{'result':'Failed','data':{'ApplicationId': 'NA'},'error':{'" + r.errorDesc+"'}}"; 
+            //return "abc";
 
         }
 
@@ -460,8 +543,8 @@ namespace Farmerbrothers.Controllers
 
         public string buildBody(NewAccount newAccount)
         {
-            /*try
-            {*/
+            try
+            {
                 String taxEx = "No";
                 if (newAccount.companyInfo.TaxExempt == 1)
                     taxEx = "Yes";
@@ -483,7 +566,10 @@ namespace Farmerbrothers.Controllers
                     "<tr><td>DBA Name(s):</td><td>" + newAccount.companyInfo.DBAName + "</td><tr>" +
                     "<tr><td>Phone:</td><td>" + newAccount.companyInfo.Phone + "</td></tr>" +
                     "<tr><td>Email:</td><td>" + newAccount.companyInfo.Email + "</td></tr>" +
-                    "<tr><td>Delivery Address:</td><td>" + newAccount.companyInfo.DeliveryAddress + "</td></tr>" +
+                    "<tr><td>Delivery Address1:</td><td>" + newAccount.companyInfo.DeliveryAddress1 + "</td></tr>" +
+                    "<tr><td>Delivery Address2:</td><td>" + newAccount.companyInfo.DeliveryAddress2 + "</td></tr>" +
+                    "<tr><td>Delivery Address3:</td><td>" + newAccount.companyInfo.DeliveryAddress3 + "</td></tr>" +
+                    "<tr><td>Delivery Address4:</td><td>" + newAccount.companyInfo.DeliveryAddress4 + "</td></tr>" +
                     "<tr><td>Delivery City:</td><td>" + newAccount.companyInfo.DeliveryCity + "</td></tr>" +
                     "<tr><td>Delivery State:</td><td>" + newAccount.companyInfo.DeliveryState + "</td></tr>" +
                     "<tr><td>Delivery Zip:</td><td>" + newAccount.companyInfo.DeliveryZip + "</td></tr>" +
@@ -508,8 +594,7 @@ namespace Farmerbrothers.Controllers
                     "<tr><td>Accounts Payable Contact:</td><td>" + newAccount.companyInfo.AccountPayableContact + "</td></tr>" +
                     "<tr><td>Title:</td><td>" + newAccount.companyInfo.AccountPayableTitle + "</td></tr>" +
                     "<tr><td>Phone Number:</td><td>" + newAccount.companyInfo.AccountPayablePhone + "</td></tr>" +
-                    "<tr><td>Email:</td><td>" + newAccount.companyInfo.AccountPayableEmail + "</td></tr>" +
-                    //"<tr><td>Credit Line requested:</td><td>" + newAccount.companyInfo.CreditRequested + "</td></tr>" +
+                    "<tr><td>Email:</td><td>" + newAccount.companyInfo.AccountPayableEmail + "</td></tr>" +                    
                     "<tr><td>Secondary Account Payable Contact:</td><td>" + newAccount.companyInfo.SecondaryAccountPayableContact + "</td></tr>" +
                     "<tr><td>Secondary Account Payable Title:</td><td>" + newAccount.companyInfo.SecondaryAccountPayableTitle + "</td></tr>" +
                     "<tr><td>Secondary Account Payable Phone:</td><td>" + newAccount.companyInfo.SecondaryAccountPayablePhone + "</td></tr>" +
@@ -557,13 +642,15 @@ namespace Farmerbrothers.Controllers
                  "<tr><td>Date:</td><td>" + newAccount.consentAndSignature.Date + "</td></tr>" +                 
                 "</table>";
 
-
-            return tab1 + tab2 + tab3 + tab4 + tab5;
-            /*}
+            if(newAccount.personalGuarantee.FirstName=="" && newAccount.personalGuarantee.MiddleName == "" && newAccount.personalGuarantee.LastName == "")
+                    return tab1 + tab2 + tab3 + tab5;
+            else
+                return tab1 + tab2 + tab3 + tab4 + tab5;
+            }
             catch(Exception e)
             {
                 return e.ToString();
-            }*/
+            }
             //return "abc";
         }
 
@@ -583,8 +670,8 @@ namespace Farmerbrothers.Controllers
           
             try
             {
-                string getimgNames = "SELECT * FROM  NARF_NewAccount WHERE " +
-                                    " ApplicationId = " + applicationID + ";";
+                string getimgNames = "select hd.*,fb.* from NARF_FB1 as fb,NARF_Header as hd where fb.CustomerID = hd.CustomerID " +
+                                     "and hd.CustomerID = " + applicationID + ";";
 
                 using (SqlCommand cmd = new SqlCommand(getimgNames, cnn))
                 {
@@ -595,7 +682,7 @@ namespace Farmerbrothers.Controllers
                     
                     while (reader.Read())
                     {                          
-                        newAccount.companyInfo.Name=(string)reader["Name"];
+                        newAccount.companyInfo.Name = (string)reader["CustomerName"];
                         newAccount.companyInfo.Phone = (string)reader["Phone"];
                         newAccount.companyInfo.Email = (string)reader["Email"];
                         newAccount.companyInfo.DBAName = (string)reader["DBAName"];
@@ -604,7 +691,10 @@ namespace Farmerbrothers.Controllers
                         newAccount.companyInfo.BillingCity = (string)reader["BillingCity"];
                         newAccount.companyInfo.BillingZip = (string)reader["BillingZip"];
                         newAccount.companyInfo.BillingPhone = (string)reader["BillingPhone"];
-                        newAccount.companyInfo.DeliveryAddress = (string)reader["DeliveryAddress"];
+                        newAccount.companyInfo.DeliveryAddress1 = (string)reader["DeliveryAddress1"];
+                        newAccount.companyInfo.DeliveryAddress2 = (string)reader["DeliveryAddress2"];
+                        newAccount.companyInfo.DeliveryAddress3 = (string)reader["DeliveryAddress3"];
+                        newAccount.companyInfo.DeliveryAddress4 = (string)reader["DeliveryAddress4"];
                         newAccount.companyInfo.DeliveryState = (string)reader["DeliveryState"];
                         newAccount.companyInfo.DeliveryCity = (string)reader["DeliveryCity"];
                         newAccount.companyInfo.DeliveryZip = (string)reader["DeliveryZip"];
@@ -633,10 +723,7 @@ namespace Farmerbrothers.Controllers
                         newAccount.companyInfo.SecondaryAccountPayableTitle = (string)reader["SecondaryAccountPayableTitle"];
                         newAccount.companyInfo.SecondaryAccountPayablePhone = (string)reader["SecondaryAccountPayablePhone"];
                         newAccount.companyInfo.SecondaryAccountPayableEmail = (string)reader["SecondaryAccountPayableEmail"];
-                        newAccount.companyInfo.DUNSNumber = (string)reader["DUNSNumber"];
-
-                        //string cr = reader["CreditRequested"].ToString();
-                        //newAccount.CreditRequested =float.Parse(cr, CultureInfo.InvariantCulture.NumberFormat);
+                        newAccount.companyInfo.DUNSNumber = (string)reader["DUNSNumber"];                        
 
                         newAccount.userInfo.CreatedUserID = (int)reader["CreatedUserID"];                      
                         newAccount.userInfo.CreatedUserName = (string)reader["CreatedUserName"];
@@ -726,7 +813,7 @@ namespace Farmerbrothers.Controllers
                         newAccount.consentAndSignature.PrintName = (string)reader["CASPrintName"];
                         newAccount.consentAndSignature.Title = (string)reader["CASTitle"];
                         s1 = (string)reader["CASDate"].ToString();
-                        newAccount.consentAndSignature.Date = DateTime.Parse(s1).ToString("dd-MM-yyyy");                        
+                        newAccount.consentAndSignature.Date = DateTime.Parse(s1).ToString("dd-MM-yyyy");                       
 
                     }
 
@@ -792,7 +879,7 @@ namespace Farmerbrothers.Controllers
         public void sendEmail(string msg, NewAccount newAccount,bool hasAttachments)
         {                        
             string to = "ramp@seedolabs.com , madhuri.lingam@gmail.com"; //To address  
-            //string to = "yrvkrn@gmail.com"; //To address  
+            //string to = "kishore.penjarla@gmail.com"; //To address  
 
             string from = "maicsd2022@gmail.com"; //From address    
             MailMessage message = new MailMessage(from, to);
@@ -806,7 +893,7 @@ namespace Farmerbrothers.Controllers
             client.UseDefaultCredentials = false;
             client.EnableSsl = true;
             System.Net.NetworkCredential basicCredential1 = new
-            System.Net.NetworkCredential("maicsd2022@gmail.com", "m41csd@2022");
+            System.Net.NetworkCredential("maicsd2022@gmail.com", "M14MAI@2022");  //M14MAI@2022
 
             if (hasAttachments == true)
             {
@@ -854,7 +941,7 @@ namespace Farmerbrothers.Controllers
                     inline.ContentType.Name = Path.GetFileName(attachmentPath);
                     message.Attachments.Add(inline);
                 }*/
-                    }
+                }
 
                     client.Credentials = basicCredential1;
             try

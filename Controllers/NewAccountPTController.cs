@@ -102,7 +102,7 @@ namespace Farmerbrothers.Controllers
 
             try
             {
-                string getCategoryDetails = "SELECT * FROM ALLIEDPRICE; ";  // where" + whereClause + ";";
+                string getCategoryDetails = "SELECT * FROM ALLIEDPRICE; ";
 
                 using (SqlCommand cmd = new SqlCommand(getCategoryDetails, cnn))
                 {

@@ -88,7 +88,7 @@ namespace Farmerbrothers.Controllers
             public string AccountPayableContact;
             public string AccountPayableTitle;
             public string AccountPayablePhone;
-            public string AccountPayableEmail;                                 
+            public string AccountPayableEmail;
             public string TaxExemptFile;
             public string ResaleCertificateNoFile;
             public string SecondaryAccountPayableContact;
@@ -101,6 +101,7 @@ namespace Farmerbrothers.Controllers
             public string PersonalGuaranteeAuthSignFile;
             public string ConsentAuthSignFile;
             public string fb1Status;
+            public string baidtda;
 
             // to be saved in table upon impementation in front end
             public string OwnerName;
@@ -163,20 +164,39 @@ namespace Farmerbrothers.Controllers
         {
             //string connString = "Data Source=localhost\\SQLEXPRESS;Database=FarmerBrosDB;Integrated Security=SSPI";
 
-            string connString = this.Configuration.GetConnectionString("DefaultConnection");            
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+            string saveStaff = "";
+            int modified = 0;
 
             SqlConnection cnn = new SqlConnection(connString);
             try
             {
-                string saveStaff = "INSERT into NARF_Header (CustomerName,Phone,Email,DBAName,BillingAddress," +
+                if (newAccount.companyInfo.CustomerID == "")
+                {
+                    saveStaff = "INSERT into NARF_Header (CustomerName,Phone,Email,DBAName,BillingAddress," +
                     "BillingState,BillingCity,BillingZip,DeliveryAddress1,DeliveryAddress2,DeliveryAddress3,DeliveryAddress4,DeliveryState," +
                     "DeliveryCity,DeliveryZip,CompanyType,PrincipalOfficer,PrincipalOfficerTitle,NatureOfBusiness,EstablishedYear," +
                     "StateIncorporated,FederalTaxID,ResaleCertificateNumber,TaxExempt,PORequired,AlreadyHasFBAccount,FBAccount," +
-                    "DUNSNumber,CustomerJDE,fb1Status,fb1UpdatedDate) output INSERTED.CustomerID VALUES" +
+                    "DUNSNumber,CustomerJDE,fb1Status,fb1UpdatedDate,baidtda) output INSERTED.CustomerID VALUES" +
                     "(@Name,@Phone,@Email,@DBAName,@BillingAddress,@BillingState,@BillingCity,@BillingZip,@DeliveryAddress1,@DeliveryAddress2," +
                     "@DeliveryAddress3,@DeliveryAddress4,@DeliveryState,@DeliveryCity,@DeliveryZip,@CompanyType,@PrincipalOfficer,@PrincipalOfficerTitle," +
                     "@NatureOfBusiness,@EstablishedYear,@StateIncorporated,@FederalTaxID,@ResaleCertificateNumber," +
-                    "@TaxExempt,@PORequired,@AlreadyHasFBAccount,@FBAccount,@DUNSNumber,@CustomerJDE,@fb1Status,@fb1UpdatedDate);";
+                    "@TaxExempt,@PORequired,@AlreadyHasFBAccount,@FBAccount,@DUNSNumber,@CustomerJDE,@fb1Status,@fb1UpdatedDate,@baidtda);";
+                }
+                else
+                {
+                    saveStaff = "UPDATE NARF_Header SET " +
+                        "CustomerName=@Name,Phone=@Phone,Email=@Email,DBAName=@DBAName,BillingAddress=@BillingAddress," +
+                        "BillingState=@BillingState,BillingCity=@BillingCity,BillingZip=@BillingZip,DeliveryAddress1=@DeliveryAddress1," +
+                        "DeliveryAddress2=@DeliveryAddress2,DeliveryAddress3=@DeliveryAddress3,DeliveryAddress4=@DeliveryAddress4," +
+                        "DeliveryState=@DeliveryState,DeliveryCity=@DeliveryCity,DeliveryZip=@DeliveryZip,CompanyType=@CompanyType," +
+                        "PrincipalOfficer=@PrincipalOfficer,PrincipalOfficerTitle=@PrincipalOfficerTitle,StateIncorporated=@StateIncorporated" +
+                        "FederalTaxID=@FederalTaxID,NatureOfBusiness=@NatureOfBusiness,EstablishedYear=@EstablishedYear,ResaleCertificateNumber=@ResaleCertificateNumber," +
+                        "TaxExempt=@TaxExempt,PORequired=@PORequired,AlreadyHasFBAccount=@AlreadyHasFBAccount,FBAccount=@FBAccount" +
+                        "CustomerJDE=@CustomerJDE,fb1Status=@fb1Status,fb1UpdatedDate=@fb1UpdatedDate,DUNSNumber=@DUNSNumber," +
+                        "baidtda=@baidtda" +
+                        " WHERE CustomerID = " + newAccount.companyInfo.CustomerID + ";";
+                }
 
 
                 using (SqlCommand cmd = new SqlCommand(saveStaff, cnn))
@@ -193,6 +213,7 @@ namespace Farmerbrothers.Controllers
                      All such values to be treated as NULL */
 
                     string ssn = Encrypt(newAccount.personalGuarantee.SSN);
+                    
                     string dlnas = Encrypt(newAccount.personalGuarantee.DriverLicenceNoAndState);
 
                     cmd.Parameters.AddWithValue("@Name", newAccount.companyInfo.Name);
@@ -224,14 +245,22 @@ namespace Farmerbrothers.Controllers
                     cmd.Parameters.AddWithValue("@FBAccount", newAccount.companyInfo.FBAccount);
                     cmd.Parameters.AddWithValue("@DUNSNumber", newAccount.companyInfo.DUNSNumber);
                     cmd.Parameters.AddWithValue("@CustomerJDE", newAccount.companyInfo.CustomerJDE); 
-                    cmd.Parameters.AddWithValue("@fb1Status", newAccount.companyInfo.fb1Status);
-                   // cmd.Parameters.AddWithValue("@CustomerJDE", "");
+                    cmd.Parameters.AddWithValue("@fb1Status", newAccount.companyInfo.fb1Status);  
+
+                    cmd.Parameters.AddWithValue("@baidtda", newAccount.companyInfo.baidtda);
+                    //cmd.Parameters.AddWithValue("@CustomerJDE", "");
                     //cmd.Parameters.AddWithValue("@fb1Status", "Open");
                     cmd.Parameters.AddWithValue("@fb1UpdatedDate", DateTime.Now.ToString("yyyy-MM-dd")); 
 
                     cnn.Open();
                     //MessageBox.Show(cmd.CommandText);
-                    int modified = (int)cmd.ExecuteScalar();
+                    if (newAccount.companyInfo.CustomerID == "")
+                        modified = (int)cmd.ExecuteScalar();
+                    else
+                    {
+                        modified = Int32.Parse(newAccount.companyInfo.CustomerID);
+                        cmd.ExecuteNonQuery();
+                    }
 
                     if (cnn.State == System.Data.ConnectionState.Open)
                         cnn.Close();
@@ -759,6 +788,11 @@ namespace Farmerbrothers.Controllers
                             newAccount.companyInfo.BankRefDocumentFile = (string)reader["BankRefDocumentFile"];
                         if (reader["PersonalGuaranteeAuthSignFile"].ToString() != "")
                             newAccount.companyInfo.PersonalGuaranteeAuthSignFile = (string)reader["PersonalGuaranteeAuthSignFile"];
+
+                        if (reader["baidtda"].ToString() != "")                        
+                            newAccount.companyInfo.baidtda = reader["baidtda"].ToString();
+                        else
+                            newAccount.companyInfo.baidtda = "";
                         /* to be done
                          if (reader["ConsentAuthSignFile"].ToString() != "")
                              newAccount.companyInfo.ConsentAuthSignFile = (string)reader["ConsentAuthSignFile"];*/
@@ -893,11 +927,10 @@ namespace Farmerbrothers.Controllers
             client.UseDefaultCredentials = false;
             client.EnableSsl = true;
             System.Net.NetworkCredential basicCredential1 = new
-            System.Net.NetworkCredential("maicsd2022@gmail.com", "M14MAI@2022");  //M14MAI@2022
+            System.Net.NetworkCredential("maicsd2022@gmail.com", "M14MAI@2022");
 
             if (hasAttachments == true)
             {
-
                 if (newAccount.companyInfo.TaxExemptFile != null)
                 {
                     var attachmentPath = ".\\images\\" + newAccount.companyInfo.TaxExemptFile;

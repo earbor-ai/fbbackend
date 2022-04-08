@@ -14,11 +14,10 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using System.Net.Mime;
 using Newtonsoft.Json;
-
+using System.Security.Cryptography;
 
 namespace Farmerbrothers.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class NARF : ControllerBase
@@ -296,10 +295,14 @@ namespace Farmerbrothers.Controllers
         public class getFB1AccountLookupResponse
         {
             public string result { get; set; }
-            public fb1TableResponse data { get; set; }
+            public getFB1Data data { get; set; }
             public string error { get; set; }
         }
-
+        public class getFB1Data
+        {
+            public Account headerRecord { get; set; }
+            public fb1TableResponse detailRecord { get; set; }
+        }
         public class NarfTableRequest
         {
             public string CustomerID;
@@ -354,9 +357,16 @@ namespace Farmerbrothers.Controllers
         public class getNarfAccountLookupResponse
         {
             public string result { get; set; }
-            public NarfTableResponse data { get; set; }
+            public getNarfData data { get; set; }
             public string error { get; set; }
         }
+
+        public class getNarfData
+        {            
+            public Account headerRecord { get; set; }
+            public NarfTableResponse detailRecord { get; set; }
+        }
+
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -438,552 +448,554 @@ namespace Farmerbrothers.Controllers
                     whereClause += " OR narfStatus = '" + accountSearchRequest.searchStatus + "'";
                 else if (accountSearchRequest.searchStatus != "" && whereClause == "")
                     whereClause += "narfStatus = '" + accountSearchRequest.searchStatus + "'";
-
-                string getAccountDetails = "select * from NARF_Header WHERE " + whereClause;
-
-                using (SqlCommand cmd = new SqlCommand(getAccountDetails, cnn))
-                {
-                    cnn.Open();
-
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    List<AccountSearchResponse> lasr = new List<AccountSearchResponse>();
-
-                    while (reader.Read())
-                    {
-                        AccountSearchResponse asr = new AccountSearchResponse();
-
-                        asr.CustomerID = reader["CustomerID"].ToString();
-
-                        if (reader["CustomerJDE"] != DBNull.Value)
-                        {
-                            if (reader["CustomerJDE"].ToString() != "0")
-                                asr.CustomerJDE = (string)reader["CustomerJDE"];
-                            else
-                                asr.CustomerJDE = "";
-                        }
-                        else
-                            asr.CustomerJDE = "";
-
-                        if (reader["DUNSNumber"] != DBNull.Value)
-                        {
-                            if ((string)reader["DUNSNumber"] != "")
-                                asr.DUNSNumber = (string)reader["DUNSNumber"];
-                            else
-                                asr.DUNSNumber = "";
-                        }
-                        else
-                            asr.DUNSNumber = "";
-
-                        if (reader["CustomerName"] != DBNull.Value)
-                        {
-                            if ((string)reader["CustomerName"] != "")
-                                asr.CustomerName = (string)reader["CustomerName"];
-                            else
-                                asr.CustomerName = "";
-                        }
-                        else
-                            asr.CustomerName = "";
-
-                        if (reader["DBAName"] != DBNull.Value)
-                        {
-                            if ((string)reader["DBAName"] != "")
-                                asr.DBAName = (string)reader["DBAName"];
-                            else
-                                asr.DBAName = "";
-                        }
-                        else
-                            asr.DBAName = "";
-
-                        if (reader["DeliveryAddress1"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryAddress1"] != "")
-                                asr.DeliveryAddress1 = (string)reader["DeliveryAddress1"];
-                            else
-                                asr.DeliveryAddress1 = "";
-                        }
-                        else
-                            asr.DeliveryAddress1 = "";
-
-                        if (reader["DeliveryAddress2"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryAddress2"] != "")
-                                asr.DeliveryAddress2 = (string)reader["DeliveryAddress2"];
-                            else
-                                asr.DeliveryAddress2 = "";
-                        }
-                        else
-                            asr.DeliveryAddress2 = "";
-
-                        if (reader["DeliveryAddress3"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryAddress3"] != "")
-                                asr.DeliveryAddress3 = (string)reader["DeliveryAddress3"];
-                            else
-                                asr.DeliveryAddress3 = "";
-                        }
-                        else
-                            asr.DeliveryAddress3 = "";
-
-                        if (reader["DeliveryAddress4"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryAddress4"] != "")
-                                asr.DeliveryAddress4 = (string)reader["DeliveryAddress4"];
-                            else
-                                asr.DeliveryAddress4 = "";
-                        }
-                        else
-                            asr.DeliveryAddress4 = "";
-
-
-                        if (reader["DeliveryState"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryState"] != "")
-                                asr.DeliveryState = (string)reader["DeliveryState"];
-                            else
-                                asr.DeliveryState = "";
-                        }
-                        else
-                            asr.DeliveryState = "";
-
-                        if (reader["DeliveryCity"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryCity"] != "")
-                                asr.DeliveryCity = (string)reader["DeliveryCity"];
-                            else
-                                asr.DeliveryCity = "";
-                        }
-                        else
-                            asr.DeliveryCity = "";
-
-                        if (reader["DeliveryZip"] != DBNull.Value)
-                        {
-                            if ((string)reader["DeliveryZip"] != "")
-                                asr.DeliveryZip = (string)reader["DeliveryZip"];
-                            else
-                                asr.DeliveryZip = "";
-                        }
-                        else
-                            asr.DeliveryZip = "";
-
-                        if (reader["Phone"] != DBNull.Value)
-                        {
-                            if ((string)reader["Phone"] != "")
-                                asr.Phone = (string)reader["Phone"];
-                            else
-                                asr.Phone = "";
-                        }
-                        else
-                            asr.Phone = "";
-
-                        if (reader["Fax"] != DBNull.Value)
-                        {
-                            if ((string)reader["Fax"] != "")
-                                asr.Fax = (string)reader["Fax"];
-                            else
-                                asr.Fax = "";
-                        }
-                        else
-                            asr.Fax = "";
-
-                        if (reader["Email"] != DBNull.Value)
-                        {
-                            if ((string)reader["Email"] != "")
-                                asr.Email = (string)reader["Email"];
-                            else
-                                asr.Email = "";
-                        }
-                        else
-                            asr.Email = "";
-
-                        if (reader["County"] != DBNull.Value)
-                        {
-                            if ((string)reader["County"] != "")
-                                asr.County = (string)reader["County"];
-                            else
-                                asr.County = "";
-                        }
-                        else
-                            asr.County = "";
-
-                        if (reader["PrincipalOfficer"] != DBNull.Value)
-                        {
-                            if ((string)reader["PrincipalOfficer"] != "")
-                                asr.PrincipalOfficer = (string)reader["PrincipalOfficer"];
-                            else
-                                asr.PrincipalOfficer = "";
-                        }
-                        else
-                            asr.PrincipalOfficer = "";
-
-                        if (reader["PrincipalOfficerTitle"] != DBNull.Value)
-                        {
-                            if ((string)reader["PrincipalOfficerTitle"] != "")
-                                asr.PrincipalOfficerTitle = (string)reader["PrincipalOfficerTitle"];
-                            else
-                                asr.PrincipalOfficerTitle = "";
-                        }
-                        else
-                            asr.PrincipalOfficerTitle = "";
-
-                        if (reader["PrincipalCell"] != DBNull.Value)
-                        {
-                            if ((string)reader["PrincipalCell"] != "")
-                                asr.PrincipalCell = (string)reader["PrincipalCell"];
-                            else
-                                asr.PrincipalCell = "";
-                        }
-                        else
-                            asr.PrincipalCell = "";
-
-                        if (reader["PrincipalEmail"] != DBNull.Value)
-                        {
-                            if ((string)reader["PrincipalEmail"] != "")
-                                asr.PrincipalEmail = (string)reader["PrincipalEmail"];
-                            else
-                                asr.PrincipalEmail = "";
-                        }
-                        else
-                            asr.PrincipalEmail = "";
-
-                        if (reader["OwnerName"] != DBNull.Value)
-                        {
-                            if ((string)reader["OwnerName"] != "")
-                                asr.OwnerName = (string)reader["OwnerName"];
-                            else
-                                asr.OwnerName = "";
-                        }
-                        else
-                            asr.OwnerName = "";
-
-                        if (reader["BillingAddress"] != DBNull.Value)
-                        {
-                            if ((string)reader["BillingAddress"] != "")
-                                asr.BillingAddress = (string)reader["BillingAddress"];
-                            else
-                                asr.BillingAddress = "";
-                        }
-                        else
-                            asr.BillingAddress = "";
-
-                        if (reader["BillingState"] != DBNull.Value)
-                        {
-                            if ((string)reader["BillingState"] != "")
-                                asr.BillingState = (string)reader["BillingState"];
-                            else
-                                asr.BillingState = "";
-                        }
-                        else
-                            asr.BillingState = "";
-
-                        if (reader["BillingCity"] != DBNull.Value)
-                        {
-                            if ((string)reader["BillingCity"] != "")
-                                asr.BillingCity = (string)reader["BillingCity"];
-                            else
-                                asr.BillingCity = "";
-                        }
-                        else
-                            asr.BillingCity = "";
-
-                        if (reader["BillingZip"] != DBNull.Value)
-                        {
-                            if ((string)reader["BillingZip"] != "")
-                                asr.BillingZip = (string)reader["BillingZip"];
-                            else
-                                asr.BillingZip = "";
-                        }
-                        else
-                            asr.BillingZip = "";
-
-
-                        if (reader["FederalTaxID"] != DBNull.Value)
-                        {
-                            if ((string)reader["FederalTaxID"] != "")
-                                asr.FederalTaxID = (string)reader["FederalTaxID"];
-                            else
-                                asr.FederalTaxID = "";
-                        }
-                        else
-                            asr.FederalTaxID = "";
-
-                        if (reader["ResaleCertificateNumber"] != DBNull.Value)
-                        {
-                            if ((string)reader["ResaleCertificateNumber"] != "")
-                                asr.ResaleCertificateNumber = (string)reader["ResaleCertificateNumber"];
-                            else
-                                asr.ResaleCertificateNumber = "";
-                        }
-                        else
-                            asr.ResaleCertificateNumber = "";
-
-                        if (reader["TaxGroup"] != DBNull.Value)
-                        {
-                            if ((string)reader["TaxGroup"] != "")
-                                asr.TaxGroup = (string)reader["TaxGroup"];
-                            else
-                                asr.TaxGroup = "";
-                        }
-                        else
-                            asr.TaxGroup = "";
-
-                        if (reader["CompanyType"] != DBNull.Value)
-                        {
-                            if ((string)reader["CompanyType"] != "")
-                                asr.CompanyType = (string)reader["CompanyType"];
-                            else
-                                asr.CompanyType = "";
-                        }
-                        else
-                            asr.CompanyType = "";
-
-                        if (reader["NatureOfBusiness"] != DBNull.Value)
-                        {
-                            if ((string)reader["NatureOfBusiness"] != "")
-                                asr.NatureOfBusiness = (string)reader["NatureOfBusiness"];
-                            else
-                                asr.NatureOfBusiness = "";
-                        }
-                        else
-                            asr.NatureOfBusiness = "";
-
-                        if (reader["EstablishedYear"] != DBNull.Value)
-                        {
-                            if ((string)reader["EstablishedYear"] != "")
-                                asr.EstablishedYear = (string)reader["EstablishedYear"];
-                            else
-                                asr.EstablishedYear = "";
-                        }
-                        else
-                            asr.EstablishedYear = "";
-
-                        if (reader["StateIncorporated"] != DBNull.Value)
-                        {
-                            if ((string)reader["StateIncorporated"] != "")
-                                asr.StateIncorporated = (string)reader["StateIncorporated"];
-                            else
-                                asr.StateIncorporated = "";
-                        }
-                        else
-                            asr.StateIncorporated = "";
-
-                        if (reader["TaxExempt"] != DBNull.Value)
-                        {
-                            if (reader["TaxExempt"].ToString() != "")
-                            {
-                                if (reader["TaxExempt"].ToString() == "True")
-                                    asr.TaxExempt = "1";
-                                if (reader["TaxExempt"].ToString() == "False")
-                                    asr.TaxExempt = "0";
-                            }
-                            else
-                                asr.TaxExempt = "";
-                        }
-                        else
-                            asr.TaxExempt = "";
-
-                        if (reader["PORequired"] != DBNull.Value)
-                        {
-                            if (reader["PORequired"].ToString() != "")
-                            {
-                                if (reader["PORequired"].ToString() == "True")
-                                    asr.PORequired = "1";
-                                if (reader["PORequired"].ToString() == "False")
-                                    asr.PORequired = "0";
-                            }
-                            else
-                                asr.PORequired = "";
-                        }
-                        else
-                            asr.PORequired = "";
-
-                        if (reader["AlreadyHasFBAccount"] != DBNull.Value)
-                        {
-                            if (reader["AlreadyHasFBAccount"].ToString() != "")
-                            {
-                                if (reader["AlreadyHasFBAccount"].ToString() == "True")
-                                    asr.AlreadyHasFBAccount = "1";
-                                if (reader["AlreadyHasFBAccount"].ToString() == "False")
-                                    asr.AlreadyHasFBAccount = "0";
-                            }
-                            else
-                                asr.AlreadyHasFBAccount = "";
-                        }
-                        else
-                            asr.AlreadyHasFBAccount = "";
-
-                        if (reader["FBAccount"] != DBNull.Value)
-                        {
-                            if ((string)reader["FBAccount"] != "")
-                                asr.FBAccount = (string)reader["FBAccount"];
-                            else
-                                asr.FBAccount = "";
-                        }
-                        else
-                            asr.FBAccount = "";
-
-                        if (reader["fb1Status"] != DBNull.Value)
-                        {
-                            if ((string)reader["fb1Status"] != "")
-                                asr.fb1Status = (string)reader["fb1Status"];
-                            else
-                                asr.fb1Status = "";
-                        }
-                        else
-                            asr.fb1Status = "";
-
-                        if (reader["fb1UpdatedDate"] != DBNull.Value)
-                        {
-                            string s = (string)reader["fb1UpdatedDate"].ToString();
-                            DateTime cd = DateTime.Parse(s);
-
-                            //asr.fb1UpdatedDate = cd.ToString("yyyy/MM/dd"); CSD
-                            asr.fb1UpdatedDate = cd.ToString("MM/dd/yyyy");
-                        }
-                        else
-                            asr.fb1UpdatedDate = "";
-
-                        if (reader["narfStatus"] != DBNull.Value)
-                        {
-                            if ((string)reader["narfStatus"] != "")
-                                asr.narfStatus = (string)reader["narfStatus"];
-                            else
-                                asr.narfStatus = "";
-                        }
-                        else
-                            asr.narfStatus = "";
-
-                        if (reader["narfUpdatedDate"] != DBNull.Value)
-                        {
-                            string s = (string)reader["narfUpdatedDate"].ToString();
-                            DateTime cd = DateTime.Parse(s);
-
-                            //asr.narfUpdatedDate = cd.ToString("yyyy-MM-dd"); CSD
-                            asr.narfUpdatedDate = cd.ToString("MM/dd/yyyy");
-                        }
-                        else
-                            asr.narfUpdatedDate = "";
-
-                        if (reader["customerContactName"] != DBNull.Value)
-                        {
-                            if ((string)reader["customerContactName"] != "")
-                                asr.customerContactName = (string)reader["customerContactName"];
-                            else
-                                asr.customerContactName = "";
-                        }
-                        else
-                            asr.customerContactName = "";
-
-                        if (reader["baidtda"] != DBNull.Value)
-                        {
-                            if (reader["baidtda"].ToString() != "")
-                            {
-                                asr.baidtda = reader["baidtda"].ToString();
-                            }
-                            else
-                                asr.baidtda = "";
-                        }
-                        else
-                            asr.baidtda = "";
-
-                        if (reader["alphaName"] != DBNull.Value)
-                        {
-                            if ((string)reader["alphaName"] != "")
-                                asr.alphaName = (string)reader["alphaName"];
-                            else
-                                asr.alphaName = "";
-                        }
-                        else
-                            asr.alphaName = "";
-
-                        if (reader["eocno"] != DBNull.Value)
-                        {
-                            if (reader["eocno"].ToString() != "")
-                            {
-                                asr.eocno = reader["eocno"].ToString();
-                            }
-                            else
-                                asr.eocno = "";
-                        }
-                        else
-                            asr.eocno = "";
-
-                        if (reader["legalMailingName"] != DBNull.Value)
-                        {
-                            if ((string)reader["legalMailingName"] != "")
-                                asr.legalMailingName = (string)reader["legalMailingName"];
-                            else
-                                asr.legalMailingName = "";
-                        }
-                        else
-                            asr.legalMailingName = "";
-
-                        if (reader["eeBilltoAcc"] != DBNull.Value)
-                        {
-                            if ((string)reader["eeBilltoAcc"] != "")
-                                asr.eeBilltoAcc = (string)reader["eeBilltoAcc"];
-                            else
-                                asr.eeBilltoAcc = "";
-                        }
-                        else
-                            asr.eeBilltoAcc = "";
-
-                        if (reader["cnBilltoAcc"] != DBNull.Value)
-                        {
-                            if ((string)reader["cnBilltoAcc"] != "")
-                                asr.cnBilltoAcc = (string)reader["cnBilltoAcc"];
-                            else
-                                asr.cnBilltoAcc = "";
-                        }
-                        else
-                            asr.cnBilltoAcc = "";
-
-                        if (reader["dailyDelvSeq"] != DBNull.Value)
-                        {
-                            if ((string)reader["dailyDelvSeq"] != "")
-                                asr.dailyDelvSeq = (string)reader["dailyDelvSeq"];
-                            else
-                                asr.dailyDelvSeq = "";
-                        }
-                        else
-                            asr.dailyDelvSeq = "";
-
-                        if (reader["freqDailyDelv"] != DBNull.Value)
-                        {
-                            if ((string)reader["freqDailyDelv"] != "")
-                                asr.freqDailyDelv = (string)reader["freqDailyDelv"];
-                            else
-                                asr.freqDailyDelv = "";
-                        }
-                        else
-                            asr.freqDailyDelv = "";
-
-                        lasr.Add(asr);
-                    }
-                    ac.accounts = lasr;
-                    cmd.Dispose();
-                    reader.Close();
-
-
-                    if (cnn.State == System.Data.ConnectionState.Open)
-                        cnn.Close();
-                    gplr.result = "Success";
-                    gplr.data = ac;
-                    //gplr.accounts = lasr;
-                    gplr.error = "";
-                }
+                
+                ac.accounts = getHeaderData(whereClause);
+                gplr.result = "Success";
+                gplr.data = ac;                
+                gplr.error = "";
             }
             catch (SqlException ex)
             {
                 cnn.Close();
                 gplr.result = "Failed";
-                gplr.data = null;
-                //gplr.accounts = null;
+                gplr.data = null;                
                 gplr.error = ex.ToString();
             }
 
             String json = JsonConvert.SerializeObject(gplr, Formatting.Indented);
             //MessageBox.Show(json);
             return json;
+        }
+
+        public List<AccountSearchResponse> getHeaderData(String where)
+        {
+            string connString = this.Configuration.GetConnectionString("DefaultConnection");
+            List<AccountSearchResponse> lasr = new List<AccountSearchResponse>();
+            SqlConnection cnn = new SqlConnection(connString);
+
+            string getAccountDetails = "select * from NARF_Header WHERE " + where;
+
+            using (SqlCommand cmd = new SqlCommand(getAccountDetails, cnn))
+            {
+                cnn.Open();
+
+                SqlDataReader reader = cmd.ExecuteReader();          
+
+                while (reader.Read())
+                {
+                    AccountSearchResponse asr = new AccountSearchResponse();
+
+                    asr.CustomerID = reader["CustomerID"].ToString();
+
+                    if (reader["CustomerJDE"] != DBNull.Value)
+                    {
+                        if (reader["CustomerJDE"].ToString() != "0")
+                            asr.CustomerJDE = (string)reader["CustomerJDE"];
+                        else
+                            asr.CustomerJDE = "";
+                    }
+                    else
+                        asr.CustomerJDE = "";
+
+                    if (reader["DUNSNumber"] != DBNull.Value)
+                    {
+                        if ((string)reader["DUNSNumber"] != "")
+                            asr.DUNSNumber = (string)reader["DUNSNumber"];
+                        else
+                            asr.DUNSNumber = "";
+                    }
+                    else
+                        asr.DUNSNumber = "";
+
+                    if (reader["CustomerName"] != DBNull.Value)
+                    {
+                        if ((string)reader["CustomerName"] != "")
+                            asr.CustomerName = (string)reader["CustomerName"];
+                        else
+                            asr.CustomerName = "";
+                    }
+                    else
+                        asr.CustomerName = "";
+
+                    if (reader["DBAName"] != DBNull.Value)
+                    {
+                        if ((string)reader["DBAName"] != "")
+                            asr.DBAName = (string)reader["DBAName"];
+                        else
+                            asr.DBAName = "";
+                    }
+                    else
+                        asr.DBAName = "";
+
+                    if (reader["DeliveryAddress1"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryAddress1"] != "")
+                            asr.DeliveryAddress1 = (string)reader["DeliveryAddress1"];
+                        else
+                            asr.DeliveryAddress1 = "";
+                    }
+                    else
+                        asr.DeliveryAddress1 = "";
+
+                    if (reader["DeliveryAddress2"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryAddress2"] != "")
+                            asr.DeliveryAddress2 = (string)reader["DeliveryAddress2"];
+                        else
+                            asr.DeliveryAddress2 = "";
+                    }
+                    else
+                        asr.DeliveryAddress2 = "";
+
+                    if (reader["DeliveryAddress3"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryAddress3"] != "")
+                            asr.DeliveryAddress3 = (string)reader["DeliveryAddress3"];
+                        else
+                            asr.DeliveryAddress3 = "";
+                    }
+                    else
+                        asr.DeliveryAddress3 = "";
+
+                    if (reader["DeliveryAddress4"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryAddress4"] != "")
+                            asr.DeliveryAddress4 = (string)reader["DeliveryAddress4"];
+                        else
+                            asr.DeliveryAddress4 = "";
+                    }
+                    else
+                        asr.DeliveryAddress4 = "";
+
+
+                    if (reader["DeliveryState"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryState"] != "")
+                            asr.DeliveryState = (string)reader["DeliveryState"];
+                        else
+                            asr.DeliveryState = "";
+                    }
+                    else
+                        asr.DeliveryState = "";
+
+                    if (reader["DeliveryCity"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryCity"] != "")
+                            asr.DeliveryCity = (string)reader["DeliveryCity"];
+                        else
+                            asr.DeliveryCity = "";
+                    }
+                    else
+                        asr.DeliveryCity = "";
+
+                    if (reader["DeliveryZip"] != DBNull.Value)
+                    {
+                        if ((string)reader["DeliveryZip"] != "")
+                            asr.DeliveryZip = (string)reader["DeliveryZip"];
+                        else
+                            asr.DeliveryZip = "";
+                    }
+                    else
+                        asr.DeliveryZip = "";
+
+                    if (reader["Phone"] != DBNull.Value)
+                    {
+                        if ((string)reader["Phone"] != "")
+                            asr.Phone = (string)reader["Phone"];
+                        else
+                            asr.Phone = "";
+                    }
+                    else
+                        asr.Phone = "";
+
+                    if (reader["Fax"] != DBNull.Value)
+                    {
+                        if ((string)reader["Fax"] != "")
+                            asr.Fax = (string)reader["Fax"];
+                        else
+                            asr.Fax = "";
+                    }
+                    else
+                        asr.Fax = "";
+
+                    if (reader["Email"] != DBNull.Value)
+                    {
+                        if ((string)reader["Email"] != "")
+                            asr.Email = (string)reader["Email"];
+                        else
+                            asr.Email = "";
+                    }
+                    else
+                        asr.Email = "";
+
+                    if (reader["County"] != DBNull.Value)
+                    {
+                        if ((string)reader["County"] != "")
+                            asr.County = (string)reader["County"];
+                        else
+                            asr.County = "";
+                    }
+                    else
+                        asr.County = "";
+
+                    if (reader["PrincipalOfficer"] != DBNull.Value)
+                    {
+                        if ((string)reader["PrincipalOfficer"] != "")
+                            asr.PrincipalOfficer = (string)reader["PrincipalOfficer"];
+                        else
+                            asr.PrincipalOfficer = "";
+                    }
+                    else
+                        asr.PrincipalOfficer = "";
+
+                    if (reader["PrincipalOfficerTitle"] != DBNull.Value)
+                    {
+                        if ((string)reader["PrincipalOfficerTitle"] != "")
+                            asr.PrincipalOfficerTitle = (string)reader["PrincipalOfficerTitle"];
+                        else
+                            asr.PrincipalOfficerTitle = "";
+                    }
+                    else
+                        asr.PrincipalOfficerTitle = "";
+
+                    if (reader["PrincipalCell"] != DBNull.Value)
+                    {
+                        if ((string)reader["PrincipalCell"] != "")
+                            asr.PrincipalCell = (string)reader["PrincipalCell"];
+                        else
+                            asr.PrincipalCell = "";
+                    }
+                    else
+                        asr.PrincipalCell = "";
+
+                    if (reader["PrincipalEmail"] != DBNull.Value)
+                    {
+                        if ((string)reader["PrincipalEmail"] != "")
+                            asr.PrincipalEmail = (string)reader["PrincipalEmail"];
+                        else
+                            asr.PrincipalEmail = "";
+                    }
+                    else
+                        asr.PrincipalEmail = "";
+
+                    if (reader["OwnerName"] != DBNull.Value)
+                    {
+                        if ((string)reader["OwnerName"] != "")
+                            asr.OwnerName = (string)reader["OwnerName"];
+                        else
+                            asr.OwnerName = "";
+                    }
+                    else
+                        asr.OwnerName = "";
+
+                    if (reader["BillingAddress"] != DBNull.Value)
+                    {
+                        if ((string)reader["BillingAddress"] != "")
+                            asr.BillingAddress = (string)reader["BillingAddress"];
+                        else
+                            asr.BillingAddress = "";
+                    }
+                    else
+                        asr.BillingAddress = "";
+
+                    if (reader["BillingState"] != DBNull.Value)
+                    {
+                        if ((string)reader["BillingState"] != "")
+                            asr.BillingState = (string)reader["BillingState"];
+                        else
+                            asr.BillingState = "";
+                    }
+                    else
+                        asr.BillingState = "";
+
+                    if (reader["BillingCity"] != DBNull.Value)
+                    {
+                        if ((string)reader["BillingCity"] != "")
+                            asr.BillingCity = (string)reader["BillingCity"];
+                        else
+                            asr.BillingCity = "";
+                    }
+                    else
+                        asr.BillingCity = "";
+
+                    if (reader["BillingZip"] != DBNull.Value)
+                    {
+                        if ((string)reader["BillingZip"] != "")
+                            asr.BillingZip = (string)reader["BillingZip"];
+                        else
+                            asr.BillingZip = "";
+                    }
+                    else
+                        asr.BillingZip = "";
+
+
+                    if (reader["FederalTaxID"] != DBNull.Value)
+                    {
+                        if ((string)reader["FederalTaxID"] != "")
+                            asr.FederalTaxID = (string)reader["FederalTaxID"];
+                        else
+                            asr.FederalTaxID = "";
+                    }
+                    else
+                        asr.FederalTaxID = "";
+
+                    if (reader["ResaleCertificateNumber"] != DBNull.Value)
+                    {
+                        if ((string)reader["ResaleCertificateNumber"] != "")
+                            asr.ResaleCertificateNumber = (string)reader["ResaleCertificateNumber"];
+                        else
+                            asr.ResaleCertificateNumber = "";
+                    }
+                    else
+                        asr.ResaleCertificateNumber = "";
+
+                    if (reader["TaxGroup"] != DBNull.Value)
+                    {
+                        if ((string)reader["TaxGroup"] != "")
+                            asr.TaxGroup = (string)reader["TaxGroup"];
+                        else
+                            asr.TaxGroup = "";
+                    }
+                    else
+                        asr.TaxGroup = "";
+
+                    if (reader["CompanyType"] != DBNull.Value)
+                    {
+                        if ((string)reader["CompanyType"] != "")
+                            asr.CompanyType = (string)reader["CompanyType"];
+                        else
+                            asr.CompanyType = "";
+                    }
+                    else
+                        asr.CompanyType = "";
+
+                    if (reader["NatureOfBusiness"] != DBNull.Value)
+                    {
+                        if ((string)reader["NatureOfBusiness"] != "")
+                            asr.NatureOfBusiness = (string)reader["NatureOfBusiness"];
+                        else
+                            asr.NatureOfBusiness = "";
+                    }
+                    else
+                        asr.NatureOfBusiness = "";
+
+                    if (reader["EstablishedYear"] != DBNull.Value)
+                    {
+                        if ((string)reader["EstablishedYear"] != "")
+                            asr.EstablishedYear = (string)reader["EstablishedYear"];
+                        else
+                            asr.EstablishedYear = "";
+                    }
+                    else
+                        asr.EstablishedYear = "";
+
+                    if (reader["StateIncorporated"] != DBNull.Value)
+                    {
+                        if ((string)reader["StateIncorporated"] != "")
+                            asr.StateIncorporated = (string)reader["StateIncorporated"];
+                        else
+                            asr.StateIncorporated = "";
+                    }
+                    else
+                        asr.StateIncorporated = "";
+
+                    if (reader["TaxExempt"] != DBNull.Value)
+                    {
+                        if (reader["TaxExempt"].ToString() != "")
+                        {
+                            if (reader["TaxExempt"].ToString() == "True")
+                                asr.TaxExempt = "1";
+                            if (reader["TaxExempt"].ToString() == "False")
+                                asr.TaxExempt = "0";
+                        }
+                        else
+                            asr.TaxExempt = "";
+                    }
+                    else
+                        asr.TaxExempt = "";
+
+                    if (reader["PORequired"] != DBNull.Value)
+                    {
+                        if (reader["PORequired"].ToString() != "")
+                        {
+                            if (reader["PORequired"].ToString() == "True")
+                                asr.PORequired = "1";
+                            if (reader["PORequired"].ToString() == "False")
+                                asr.PORequired = "0";
+                        }
+                        else
+                            asr.PORequired = "";
+                    }
+                    else
+                        asr.PORequired = "";
+
+                    if (reader["AlreadyHasFBAccount"] != DBNull.Value)
+                    {
+                        if (reader["AlreadyHasFBAccount"].ToString() != "")
+                        {
+                            if (reader["AlreadyHasFBAccount"].ToString() == "True")
+                                asr.AlreadyHasFBAccount = "1";
+                            if (reader["AlreadyHasFBAccount"].ToString() == "False")
+                                asr.AlreadyHasFBAccount = "0";
+                        }
+                        else
+                            asr.AlreadyHasFBAccount = "";
+                    }
+                    else
+                        asr.AlreadyHasFBAccount = "";
+
+                    if (reader["FBAccount"] != DBNull.Value)
+                    {
+                        if ((string)reader["FBAccount"] != "")
+                            asr.FBAccount = (string)reader["FBAccount"];
+                        else
+                            asr.FBAccount = "";
+                    }
+                    else
+                        asr.FBAccount = "";
+
+                    if (reader["fb1Status"] != DBNull.Value)
+                    {
+                        if ((string)reader["fb1Status"] != "")
+                            asr.fb1Status = (string)reader["fb1Status"];
+                        else
+                            asr.fb1Status = "";
+                    }
+                    else
+                        asr.fb1Status = "";
+
+                    if (reader["fb1UpdatedDate"] != DBNull.Value)
+                    {
+                        string s = (string)reader["fb1UpdatedDate"].ToString();
+                        DateTime cd = DateTime.Parse(s);
+
+                        asr.fb1UpdatedDate = cd.ToString("MM/dd/yyyy");
+                    }
+                    else
+                        asr.fb1UpdatedDate = "";
+
+                    if (reader["narfStatus"] != DBNull.Value)
+                    {
+                        if ((string)reader["narfStatus"] != "")
+                            asr.narfStatus = (string)reader["narfStatus"];
+                        else
+                            asr.narfStatus = "";
+                    }
+                    else
+                        asr.narfStatus = "";
+
+                    if (reader["narfUpdatedDate"] != DBNull.Value)
+                    {
+                        string s = (string)reader["narfUpdatedDate"].ToString();
+                        DateTime cd = DateTime.Parse(s);
+
+                        asr.narfUpdatedDate = cd.ToString("MM/dd/yyyy");
+                    }
+                    else
+                        asr.narfUpdatedDate = "";
+
+                    if (reader["customerContactName"] != DBNull.Value)
+                    {
+                        if ((string)reader["customerContactName"] != "")
+                            asr.customerContactName = (string)reader["customerContactName"];
+                        else
+                            asr.customerContactName = "";
+                    }
+                    else
+                        asr.customerContactName = "";
+
+                    if (reader["baidtda"] != DBNull.Value)
+                    {
+                        if (reader["baidtda"].ToString() != "")
+                        {
+                            asr.baidtda = reader["baidtda"].ToString();
+                        }
+                        else
+                            asr.baidtda = "";
+                    }
+                    else
+                        asr.baidtda = "";
+
+                    if (reader["alphaName"] != DBNull.Value)
+                    {
+                        if ((string)reader["alphaName"] != "")
+                            asr.alphaName = (string)reader["alphaName"];
+                        else
+                            asr.alphaName = "";
+                    }
+                    else
+                        asr.alphaName = "";
+
+                    if (reader["eocno"] != DBNull.Value)
+                    {
+                        if (reader["eocno"].ToString() != "")
+                        {
+                            asr.eocno = reader["eocno"].ToString();
+                        }
+                        else
+                            asr.eocno = "";
+                    }
+                    else
+                        asr.eocno = "";
+
+                    if (reader["legalMailingName"] != DBNull.Value)
+                    {
+                        if ((string)reader["legalMailingName"] != "")
+                            asr.legalMailingName = (string)reader["legalMailingName"];
+                        else
+                            asr.legalMailingName = "";
+                    }
+                    else
+                        asr.legalMailingName = "";
+
+                    if (reader["eeBilltoAcc"] != DBNull.Value)
+                    {
+                        if ((string)reader["eeBilltoAcc"] != "")
+                            asr.eeBilltoAcc = (string)reader["eeBilltoAcc"];
+                        else
+                            asr.eeBilltoAcc = "";
+                    }
+                    else
+                        asr.eeBilltoAcc = "";
+
+                    if (reader["cnBilltoAcc"] != DBNull.Value)
+                    {
+                        if ((string)reader["cnBilltoAcc"] != "")
+                            asr.cnBilltoAcc = (string)reader["cnBilltoAcc"];
+                        else
+                            asr.cnBilltoAcc = "";
+                    }
+                    else
+                        asr.cnBilltoAcc = "";
+
+                    if (reader["dailyDelvSeq"] != DBNull.Value)
+                    {
+                        if ((string)reader["dailyDelvSeq"] != "")
+                            asr.dailyDelvSeq = (string)reader["dailyDelvSeq"];
+                        else
+                            asr.dailyDelvSeq = "";
+                    }
+                    else
+                        asr.dailyDelvSeq = "";
+
+                    if (reader["freqDailyDelv"] != DBNull.Value)
+                    {
+                        if ((string)reader["freqDailyDelv"] != "")
+                            asr.freqDailyDelv = (string)reader["freqDailyDelv"];
+                        else
+                            asr.freqDailyDelv = "";
+                    }
+                    else
+                        asr.freqDailyDelv = "";
+
+                    lasr.Add(asr);
+                }
+            cmd.Dispose();
+            reader.Close();
+            }
+            if (cnn.State == System.Data.ConnectionState.Open)
+                cnn.Close();
+            return lasr;
         }
 
         /* Record Insertion into Table */
@@ -1381,6 +1393,8 @@ namespace Farmerbrothers.Controllers
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
             getFB1AccountLookupResponse gfblr = new getFB1AccountLookupResponse();
             fb1TableResponse ftr = new fb1TableResponse();            
+            bool foundNtrRecord = false;
+            List<AccountSearchResponse> ac;
 
             SqlConnection cnn = new SqlConnection(connString);
 
@@ -1388,7 +1402,12 @@ namespace Farmerbrothers.Controllers
             {
                 string whereClause = "";                
                 if (fbTableRequest.CustomerID != "")
-                    whereClause += "CustomerID = " + fbTableRequest.CustomerID;                
+                    whereClause += "CustomerID = " + fbTableRequest.CustomerID;
+
+                gfblr.data = new getFB1Data();
+                ac = getHeaderData(whereClause);
+                gfblr.data.headerRecord = new Account();
+                gfblr.data.headerRecord.accounts = ac;
 
                 string getAccountDetails = "select * from NARF_FB1 WHERE " + whereClause;
 
@@ -1399,6 +1418,7 @@ namespace Farmerbrothers.Controllers
 
                     while (reader.Read())
                     {
+                        foundNtrRecord = true;
                         ftr.CustomerID = reader["CustomerID"].ToString();
 
                         if (reader["AccountPayableContact"] != DBNull.Value)
@@ -1711,7 +1731,11 @@ namespace Farmerbrothers.Controllers
                         if (reader["PGSSN"] != DBNull.Value)
                         {
                             if ((string)reader["PGSSN"] != "")
-                                ftr.PGSSN = (string)reader["PGSSN"];
+                            {                                
+                                string ssn = Decrypt((string)reader["PGSSN"]);
+                                //ftr.PGSSN = (string)reader["PGSSN"];
+                                ftr.PGSSN = ssn;
+                            }
                             else
                                 ftr.PGSSN = "";
                         }
@@ -1721,7 +1745,11 @@ namespace Farmerbrothers.Controllers
                         if (reader["PGDriverLicenceNoAndState"] != DBNull.Value)
                         {
                             if ((string)reader["PGDriverLicenceNoAndState"] != "")
-                                ftr.PGDriverLicenceNoAndState = (string)reader["PGDriverLicenceNoAndState"];
+                            {
+                                string driv = Decrypt((string)reader["PGDriverLicenceNoAndState"]);
+                                //ftr.PGDriverLicenceNoAndState = (string)reader["PGDriverLicenceNoAndState"];
+                                ftr.PGDriverLicenceNoAndState = driv;
+                            }
                             else
                                 ftr.PGDriverLicenceNoAndState = "";
                         }
@@ -1820,41 +1848,47 @@ namespace Farmerbrothers.Controllers
                         cnn.Close();
                     
                 }
-                string getCAA = "SELECT * FROM  NARF_TradeReference WHERE " +
+                if (foundNtrRecord == true)
+                {
+                    string getCAA = "SELECT * FROM  NARF_TradeReference WHERE " +
                                     "CustomerID = " + fbTableRequest.CustomerID + ";";
 
-                using (SqlCommand cmd = new SqlCommand(getCAA, cnn))
+                    using (SqlCommand cmd = new SqlCommand(getCAA, cnn))
+                    {
+                        cnn.Open();
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        List<TradeReference> trlist = new List<TradeReference>();
+
+                        while (reader.Read())
+                        {
+                            TradeReference tr = new TradeReference();
+                            tr.CompanyName = (string)reader["CompanyName"];
+                            tr.AccountID = (string)reader["AccountID"];
+                            tr.Phone = (string)reader["Phone"];
+                            tr.EmailID = (string)reader["EmailID"];
+                            trlist.Add(tr);
+                        }
+                        cmd.Dispose();
+                        reader.Close();
+
+                        if (cnn.State == System.Data.ConnectionState.Open)
+                            cnn.Close();
+                        
+                        ftr.tradeReferences = trlist;                        
+                    }
+                }
+                else
+                    ftr = null;
+                gfblr.data.detailRecord = ftr;
+                if (gfblr.data != null)
                 {
-                    cnn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    List<TradeReference> trlist = new List<TradeReference>();
-
-                    while (reader.Read())
-                    {
-                        TradeReference tr = new TradeReference();
-                        tr.CompanyName = (string)reader["CompanyName"];
-                        tr.AccountID = (string)reader["AccountID"];
-                        tr.Phone = (string)reader["Phone"];
-                        tr.EmailID = (string)reader["EmailID"];
-                        trlist.Add(tr);
-                    }
-                    cmd.Dispose();
-                    reader.Close();
-
-                    if (cnn.State == System.Data.ConnectionState.Open)
-                        cnn.Close();
-                    ftr.tradeReferences = trlist;
-                    gfblr.data = ftr;
-                    if (gfblr.data != null)
-                    {
-                        gfblr.result = "Success";
-                        gfblr.error = "";
-                    }
-                    else
-                    {
-                        gfblr.result = "Failed";
-                        gfblr.error = "No Records Found";
-                    }
+                    gfblr.result = "Success";
+                    gfblr.error = "";
+                }
+                else
+                {
+                    gfblr.result = "Failed";
+                    gfblr.error = "No Records Found";
                 }
             }
             catch (SqlException ex)
@@ -1869,13 +1903,43 @@ namespace Farmerbrothers.Controllers
             return json;
         }
 
+        /*KISHORE*/
+        public static string Decrypt(string cipherText)
+        {            
+            string EncryptionKey = "ram@1234xxfbProjectxxtttttuuuuuiiiiio";
+            cipherText = cipherText.Replace(" ", "+");
+            byte[] cipherBytes = Convert.FromBase64String(cipherText);
+            using (Aes encryptor = Aes.Create())
+            {
+                Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] {
+            0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76
+        });
+                encryptor.Key = pdb.GetBytes(32);
+                encryptor.IV = pdb.GetBytes(16);                
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(cipherBytes, 0, cipherBytes.Length);
+                        cs.Close();
+                    }
+                    cipherText = Encoding.Unicode.GetString(ms.ToArray());
+                }
+            }
+            return cipherText;
+        }
+
+        /**/
+
         [HttpPost]
         [Route("getNARF")]
         public string getNARFResponse(NarfTableRequest narfTableRequest)
         {
             string connString = this.Configuration.GetConnectionString("DefaultConnection");
-            getNarfAccountLookupResponse gnalr = new getNarfAccountLookupResponse();
+            getNarfAccountLookupResponse gnalr = new getNarfAccountLookupResponse();            
             NarfTableResponse ntr = new NarfTableResponse();
+            bool foundNtrRecord = false;
+            List<AccountSearchResponse> ac;
 
             SqlConnection cnn = new SqlConnection(connString);
 
@@ -1884,6 +1948,11 @@ namespace Farmerbrothers.Controllers
                 string whereClause = "";
                 if (narfTableRequest.CustomerID != "")
                     whereClause += "CustomerID = " + narfTableRequest.CustomerID;
+
+                gnalr.data = new getNarfData();                
+                ac = getHeaderData(whereClause);
+                gnalr.data.headerRecord = new Account();
+                gnalr.data.headerRecord.accounts = ac;                
 
                 string getAccountDetails = "select * from NARF_Account WHERE " + whereClause;
 
@@ -1894,6 +1963,7 @@ namespace Farmerbrothers.Controllers
 
                     while (reader.Read())
                     {
+                        foundNtrRecord = true;
                         ntr.CustomerID = reader["CustomerID"].ToString();
 
                         if (reader["purpose"] != DBNull.Value)
@@ -2270,50 +2340,48 @@ namespace Farmerbrothers.Controllers
 
                     if (cnn.State == System.Data.ConnectionState.Open)
                         cnn.Close();
-                    /*if (gnalr.data != null)
-                    {
-                        gnalr.result = "Success";
-                        gnalr.error = "";
-                    }
-                    else
-                    {
-                        gnalr.result = "Failed";
-                        gnalr.error = "No Records Found";
-                    }*/
+                    
                 }
-                string getCAA = "SELECT * FROM  Category_Allied_Adjustment WHERE " +
-                                    " customerID = " + narfTableRequest.CustomerID + ";";
-
-                using (SqlCommand cmd = new SqlCommand(getCAA, cnn))
+                if (foundNtrRecord == true)
                 {
-                    cnn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    List<CategoryAlliedAdjustment> caalist= new List<CategoryAlliedAdjustment>();
+                    string getCAA = "SELECT * FROM  Category_Allied_Adjustment WHERE " +
+                                        " customerID = " + narfTableRequest.CustomerID + ";";
 
-                    while (reader.Read())
+                    using (SqlCommand cmd = new SqlCommand(getCAA, cnn))
                     {
-                        CategoryAlliedAdjustment caa = new CategoryAlliedAdjustment();
-                        caa.categoryCode = (string)reader["categoryCode"];
-                        caa.categoryValue = (string)reader["categoryValue"];
-                        caalist.Add(caa);
-                    }
-                    cmd.Dispose();
-                    reader.Close();
+                        cnn.Open();
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        List<CategoryAlliedAdjustment> caalist = new List<CategoryAlliedAdjustment>();
 
-                    if (cnn.State == System.Data.ConnectionState.Open)
-                        cnn.Close();
-                    ntr.categoryAlliedAdjustment = caalist;
-                    gnalr.data = ntr;
-                    if (gnalr.data != null)
-                    {
-                        gnalr.result = "Success";
-                        gnalr.error = "";
+                        while (reader.Read())
+                        {
+                            CategoryAlliedAdjustment caa = new CategoryAlliedAdjustment();
+                            caa.categoryCode = (string)reader["categoryCode"];
+                            caa.categoryValue = (string)reader["categoryValue"];
+                            caalist.Add(caa);
+                        }
+                        cmd.Dispose();
+                        reader.Close();
+
+                        if (cnn.State == System.Data.ConnectionState.Open)
+                            cnn.Close();
+                        
+                        ntr.categoryAlliedAdjustment = caalist;                        
                     }
-                    else
-                    {
-                        gnalr.result = "Failed";
-                        gnalr.error = "No Records Found";
-                    }
+                }
+                else
+                    ntr = null;
+                
+                gnalr.data.detailRecord = ntr;
+                if (gnalr.data != null)
+                {
+                    gnalr.result = "Success";
+                    gnalr.error = "";
+                }
+                else
+                {
+                    gnalr.result = "Failed";
+                    gnalr.error = "No Records Found";
                 }
 
             }
